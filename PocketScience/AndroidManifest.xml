@@ -21,5 +21,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".DisplayInfo"
+            android:label="Display Info"
+            android:screenOrientation="portrait" >            
+            <intent-filter>
+                <action android:name="com.pocketscience.DISPLAY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>
