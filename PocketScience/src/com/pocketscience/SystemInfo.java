@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 /***
  * Class for keeping info for the system min, max and curent frequency, number of cpu cores, application binary interface version
  * 
- * @author Pesho 
+ * @author Pesho
  */
 public class SystemInfo
 {
@@ -106,10 +106,11 @@ public class SystemInfo
 	result = "ABI: " + this.abi;
 	result += "\nTotal system RAM: " + this.totalRAM + " Mb";
 	result += "\nNumber of Cores: " + this.numCores;
-	for (int i = 0; i < this.numCores; i++)
+	//for (int i = 0; i < this.numCores; i++)
+	for (int i = 0; i < 1; i++)
 	{
 	    result += "\n===============================\n";
-	    result += "\nCORE " + (i + 1);
+	   // result += "\nCORE " + (i + 1);
 	    result += "\nFrequency range: " + this.minFreq.get(i) / 1000 + "MHz - " + this.maxFreq.get(i) / 1000 + "MHz";
 	    result += "\nCurrent frequency: " + this.curFreq.get(i) / 1000 + "MHz";
 	}
@@ -122,7 +123,8 @@ public class SystemInfo
     public void getInfo()
     {
 	numCores = numCores();
-	for (int i = 0; i < numCores; i++)
+	// for (int i = 0; i < numCores; i++)
+	for (int i = 0; i < 1; i++) //get frequency only for core 0
 	{
 	    maxFreq.add(i, getMaxFreq(i));
 	    minFreq.add(i, getMinFreq(i));
@@ -133,8 +135,7 @@ public class SystemInfo
     }
 
     /**
-     * Gets the number of cores available in this device, across all processors. 
-     * Requires: Ability to peruse the filesystem at "/sys/devices/system/cpu"
+     * Gets the number of cores available in this device, across all processors. Requires: Ability to peruse the filesystem at "/sys/devices/system/cpu"
      * 
      * @return The number of cores, or 1 if failed to get result
      */
@@ -167,8 +168,7 @@ public class SystemInfo
     }
 
     /***
-     * Gets the maximum frequency of current cpu core provided as parameter. 
-     * Requires: Ability to read the system file "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"
+     * Gets the maximum frequency of current cpu core provided as parameter. Requires: Ability to read the system file "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"
      * 
      * @return The max frequency in Hz or 0 if failed to get result
      */
@@ -202,8 +202,7 @@ public class SystemInfo
     }
 
     /***
-     * Gets the minimum frequency of current cpu core provided as parameter. 
-     * Requires: Ability to read the system file "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq"
+     * Gets the minimum frequency of current cpu core provided as parameter. Requires: Ability to read the system file "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq"
      * 
      * @return The min frequency in Hz or 0 if failed to get result
      */
@@ -237,8 +236,7 @@ public class SystemInfo
     }
 
     /***
-     * Gets the current frequency of current cpu core provided as parameter. 
-     * Requires: Ability to read the system file "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+     * Gets the current frequency of current cpu core provided as parameter. Requires: Ability to read the system file "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
      * 
      * @return The current frequency in Hz or 0 if failed to get result
      */
