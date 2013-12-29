@@ -22,6 +22,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -34,8 +36,6 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
 	super.onCreate(savedInstanceState);
-	setContentView(R.layout.activity_main);
-	Toast.makeText(getApplicationContext(), "Hello!", Toast.LENGTH_LONG).show();
 
 	SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(this);
 	boolean isFirstRun = wmbPreference.getBoolean("FIRSTRUN", true);
@@ -64,6 +64,19 @@ public class MainActivity extends Activity
 	    editor.putBoolean("FIRSTRUN", false);
 	    editor.commit();
 	}
+	
+	if (isMyServiceRunning()) //If the service is already running open the management console
+	{
+	    finish();
+	    Intent service = new Intent("com.pocketscience.SERVICE");
+	    startActivity(service);
+	}
+	else //If the service is not yet started, start it and go on with the Activity
+	{
+	    startService(new Intent(this, MainService.class));
+	}
+	setContentView(R.layout.activity_main);
+	//Toast.makeText(getApplicationContext(), "Hello!", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -132,5 +145,18 @@ public class MainActivity extends Activity
 	    else 
 		Toast.makeText(getApplicationContext(), "We do NOT have a connection!!!", Toast.LENGTH_LONG).show();
 	}	
+    }
+    
+    private boolean isMyServiceRunning() 
+    {
+	ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+	for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) 
+	{
+	    if (MainService.class.getName().equals(service.service.getClassName())) 
+	    {
+    		return true;
+	    }
+	}
+	return false;
     }
 }

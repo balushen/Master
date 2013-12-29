@@ -35,6 +35,18 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.pocketscience.StartService"
+            android:label="Start/Stop service"
+            android:screenOrientation="portrait">
+            <!-- android:theme="@android:style/Theme.Translucent" --> 
+            <intent-filter>
+                <action android:name="com.pocketscience.SERVICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        
+        <service android:enabled="true" android:name=".MainService" />
     </application>
 
 </manifest>
