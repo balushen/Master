@@ -48,18 +48,7 @@ public class MainActivity extends Activity
 	    // 2. check connectivity (wifi, internet, server)
 	    new isServerReachable().execute();
 	    // 3. send information to server (MAC too?)
-	    /** Must be in activity
-	     * Boolean wifiEn; 
-	     * WifiManager wifi = (WifiManager)getSystemService(Context.WIFI_SERVICE); 
-	     * wifiEn = wifi.isWifiEnabled(); 
-	     * if(!wifiEn) wifi.setWifiEnabled(true); 
-	     * WifiInfo wifiInf = wifi.getConnectionInfo(); 
-	     * String macAddr = wifiInf.getMacAddress(); 
-	     * if(!wifiEn) wifi.setWifiEnabled(false); 
-	     * Toast.makeText(getApplicationContext(), macAddr, Toast.LENGTH_LONG).show();
-	     */
 	    // 4. wait confirmation from server and then set the pref variable to false
-
 	    SharedPreferences.Editor editor = wmbPreference.edit();
 	    editor.putBoolean("FIRSTRUN", false);
 	    editor.commit();
