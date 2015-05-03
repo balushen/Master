@@ -43,14 +43,15 @@ public class MainActivity extends Activity
 	{
 	    //======= Code to run once ========
 	    // 1. evaluate
-	    Intent display = new Intent("com.pocketscience.DISPLAY");
-	    startActivity(display);
+	   // Intent display = new Intent("com.pocketscience.DISPLAY");
+	   // startActivity(display);
 	    // 2. check connectivity (wifi, internet, server)
-	    new isServerReachable().execute();
+	   // new isServerReachable().execute();
 	    // 3. send information to server (MAC too?)
 	    // 4. wait confirmation from server and then set the pref variable to false
 	    SharedPreferences.Editor editor = wmbPreference.edit();
 	    editor.putBoolean("FIRSTRUN", false);
+	    editor.putString("STATE", "INIT");
 	    editor.commit();
 	}
 	
