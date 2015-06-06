@@ -27,6 +27,7 @@ import org.apache.http.params.HttpParams;
 import dalvik.system.DexClassLoader;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Request;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,12 +37,20 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-public class MainService extends android.app.Service
+public class MainService extends android.app.IntentService
 {
+    public MainService()
+    {
+	super("PocketScienceService");
+    }
+
     public static final String SERVER = "http://pocketscience.bugs3.com/";
     private static final String TAG = "MainService";
 
@@ -58,32 +67,49 @@ public class MainService extends android.app.Service
     private DexClassLoader cl;
     private Interf object;
 
-    @Override
-    public IBinder onBind(Intent arg0)
-    {
-	return null;
-    }
+//    @Override
+//    public IBinder onBind(Intent arg0)
+//    {
+//	return null;
+//    }
+//
+//    @Override
+//    public void onCreate()
+//    {
+//	Toast.makeText(this, "Congrats! MainService Created", Toast.LENGTH_LONG).show();
+//	Log.d(TAG, "onCreate");
+//    }
+
+    private Notification buildForegroundNotification(String filename) {
+	    NotificationCompat.Builder b=new NotificationCompat.Builder(this);
+
+	    b.setOngoing(true);
+
+	    b.setContentTitle("TITLE")
+	     .setContentText(filename)
+	     .setSmallIcon(R.drawable.ic_launcher)
+	     .setTicker("Ticker");
+
+	    return(b.build());
+	  }
 
     @Override
-    public void onCreate()
+    protected void onHandleIntent(Intent intent)
     {
-	Toast.makeText(this, "Congrats! MainService Created", Toast.LENGTH_LONG).show();
-	Log.d(TAG, "onCreate");
-    }
-
-    @Override
-    public void onStart(Intent intent, int startId) // THIS IS DEPRECATED, CHANGE IT TO onStartCommand()
-    {
-	Toast.makeText(this, "MainService Started", Toast.LENGTH_LONG).show();
-	Log.d(TAG, "onStart");
-	// Note: You can start a new thread and use it for long background
-	// processing from here.
+	//Get CPU lock, so it doesn't fall asleep when the screen is off
+	PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+	WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakelockTag");
+	wakeLock.acquire();
+	
+	// To release the lock => wakeLock.release();
 	
 	SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(this);
 	String currentState = "";
 
 	SharedPreferences.Editor editor = wmbPreference.edit();
 	    
+	startForeground(1987, buildForegroundNotification("drun"));
+	
 	while(true)
 	{
 	    currentState = wmbPreference.getString("STATE", "INIT");
@@ -92,7 +118,7 @@ public class MainService extends android.app.Service
 	    {
 	    case "INIT":
 		//region INIT
-/*		AsyncTask<String, Void, Boolean> checkConnectivity = new IsServerReachable();
+		AsyncTask<String, Void, Boolean> checkConnectivity = new IsServerReachable();
 		checkConnectivity.execute("http://www.google.com");
 		
 		try
@@ -109,11 +135,12 @@ public class MainService extends android.app.Service
 		if(connected)
 		{
 		    connected = false;
-		    checkConnectivity.execute("http://pocketscience.bugs3.com");
+		    AsyncTask<String, Void, Boolean> checkConnectivityServer = new IsServerReachable();
+		    checkConnectivityServer.execute("http://pocketscience.bugs3.com");
 		    
 		    try
 		    {
-			checkConnectivity.get();
+			checkConnectivityServer.get();
 		    }
 		    catch (InterruptedException e)
 		    {
@@ -130,17 +157,16 @@ public class MainService extends android.app.Service
 			// CHECK IF THERE IS A JOB TO DOWNLOAD
 			// Get a download url to pass as a parameter			
 			if(thereIsAJob)
-			{*/
+			{
 			    downloadURL = "process.jar";
 			    className = "com.pocketscience.PSImplem1";
 			    
 			    editor.putString("STATE", "DOWN");
 			    editor.putString("PREV_STATE", "INIT");
 			    editor.commit();
-/*			}
+			}
 			else
 			{
-			    SharedPreferences.Editor editor = wmbPreference.edit();
 			    editor.putString("STATE", "WAIT_J");
 			    editor.putString("PREV_STATE", "INIT");
 			    editor.commit();
@@ -148,7 +174,6 @@ public class MainService extends android.app.Service
 		    }
 		    else
 		    {
-			SharedPreferences.Editor editor = wmbPreference.edit();
 			editor.putString("STATE", "WAIT_S");
 			editor.putString("PREV_STATE", "INIT");
 			editor.commit();
@@ -156,11 +181,10 @@ public class MainService extends android.app.Service
 		}
 		else
 		{
-		    SharedPreferences.Editor editor = wmbPreference.edit();
 		    editor.putString("STATE", "WAIT_I");
 		    editor.putString("PREV_STATE", "INIT");
 		    editor.commit();
-		}*/
+		}
 				
 		break;
 		//endregion
@@ -181,16 +205,16 @@ public class MainService extends android.app.Service
 		{
 		}
 		
-		//if(downloaded)
-		//{
+		if(downloaded)
+		{
 		    editor.putString("STATE", "PROC");
 		    editor.putString("PREV_STATE", "DOWN");
 		    editor.commit();		    
-		//}
-		//else
-		//{
+		}
+		else
+		{
 		    // ????
-		//}
+		}
 
 		//endregion
 		break;
@@ -235,8 +259,14 @@ public class MainService extends android.app.Service
 
 		// just start new thread and process
 		if(object != null){
-		    object.show(getApplicationContext(), "PSImplem1 PLQSSSS");
-		    object.process(getApplicationContext());
+		    //object.show(getApplicationContext(), "PSImplem1 PLQSSSS");
+		    
+		    //new Thread(new Runnable() {
+		    //    public void run() {
+		            object.process(getApplicationContext());
+		    //    }
+		   // }).start();
+
 		    
 		    editor.putString("STATE", "UP");
 		    editor.putString("PREV_STATE", "PROC");
@@ -280,13 +310,53 @@ public class MainService extends android.app.Service
 
 	    case "WAIT_I":
 		// The next state after the wait depends on the PREV_STATE
+		
+		try
+		{
+		    Thread.sleep(60000);
+		}
+		catch (InterruptedException e)
+		{
+		    e.printStackTrace();
+		}
+				
+		editor.putString("STATE", "INIT");
+		editor.putString("PREV_STATE", "WAIT_I");
+		editor.commit();
+		
 		break;
 
 	    case "WAIT_S":
 		
+		try
+		{
+		    Thread.sleep(60000);
+		}
+		catch (InterruptedException e)
+		{
+		    e.printStackTrace();
+		}
+				
+		editor.putString("STATE", "INIT");
+		editor.putString("PREV_STATE", "WAIT_S");
+		editor.commit();
+		
 		break;
 
 	    case "WAIT_J":
+		
+		try
+		{
+		    Thread.sleep(60000);
+		}
+		catch (InterruptedException e)
+		{
+		    e.printStackTrace();
+		}
+				
+		editor.putString("STATE", "INIT");
+		editor.putString("PREV_STATE", "WAIT_J");
+		editor.commit();
 		
 		break;
 		
@@ -294,14 +364,291 @@ public class MainService extends android.app.Service
 		break;
 	    }
 	}
+	
     }
 
-    @Override
-    public void onDestroy()
-    {
-	Toast.makeText(this, "MainService Stopped", Toast.LENGTH_LONG).show();
-	Log.d(TAG, "onDestroy");
-    }
+//    @Override
+//    public void onStart(Intent intent, int startId) // THIS IS DEPRECATED, CHANGE IT TO onStartCommand()
+//    {
+//	Toast.makeText(this, "MainService Started", Toast.LENGTH_LONG).show();
+//	Log.d(TAG, "onStart");
+//	// Note: You can start a new thread and use it for long background
+//	// processing from here.
+//	
+//	//Get CPU lock, so it doesn't fall asleep when the screen is off
+//	PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+//	WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakelockTag");
+//	wakeLock.acquire();
+//	
+//	// To release the lock => wakeLock.release();
+//	
+//	SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(this);
+//	String currentState = "";
+//
+//	SharedPreferences.Editor editor = wmbPreference.edit();
+//	    
+//	while(true)
+//	{
+//	    currentState = wmbPreference.getString("STATE", "INIT");
+//	    
+//	    switch(currentState)
+//	    {
+//	    case "INIT":
+//		//region INIT
+//		AsyncTask<String, Void, Boolean> checkConnectivity = new IsServerReachable();
+//		checkConnectivity.execute("http://www.google.com");
+//		
+//		try
+//		{
+//		    checkConnectivity.get();
+//		}
+//		catch (InterruptedException e)
+//		{
+//		}
+//		catch (ExecutionException e)
+//		{
+//		}
+//		
+//		if(connected)
+//		{
+//		    connected = false;
+//		    AsyncTask<String, Void, Boolean> checkConnectivityServer = new IsServerReachable();
+//		    checkConnectivityServer.execute("http://pocketscience.bugs3.com");
+//		    
+//		    try
+//		    {
+//			checkConnectivityServer.get();
+//		    }
+//		    catch (InterruptedException e)
+//		    {
+//		    }
+//		    catch (ExecutionException e)
+//		    {
+//		    }
+//		    
+//		    if(connected)
+//		    {
+//			connected = false;
+//			Boolean thereIsAJob = true;
+//			
+//			// CHECK IF THERE IS A JOB TO DOWNLOAD
+//			// Get a download url to pass as a parameter			
+//			if(thereIsAJob)
+//			{
+//			    downloadURL = "process.jar";
+//			    className = "com.pocketscience.PSImplem1";
+//			    
+//			    editor.putString("STATE", "DOWN");
+//			    editor.putString("PREV_STATE", "INIT");
+//			    editor.commit();
+//			}
+//			else
+//			{
+//			    editor.putString("STATE", "WAIT_J");
+//			    editor.putString("PREV_STATE", "INIT");
+//			    editor.commit();
+//			}
+//		    }
+//		    else
+//		    {
+//			editor.putString("STATE", "WAIT_S");
+//			editor.putString("PREV_STATE", "INIT");
+//			editor.commit();
+//		    }
+//		}
+//		else
+//		{
+//		    editor.putString("STATE", "WAIT_I");
+//		    editor.putString("PREV_STATE", "INIT");
+//		    editor.commit();
+//		}
+//				
+//		break;
+//		//endregion
+//		
+//	    case "DOWN":
+//		//region DOWN
+//		AsyncTask<String, Void, Boolean> downloadJob = new DownloadFileTask();
+//		downloadJob.execute(downloadURL);
+//		
+//		try
+//		{
+//		    downloadJob.get();
+//		}
+//		catch (InterruptedException e)
+//		{
+//		}
+//		catch (ExecutionException e)
+//		{
+//		}
+//		
+//		if(downloaded)
+//		{
+//		    editor.putString("STATE", "PROC");
+//		    editor.putString("PREV_STATE", "DOWN");
+//		    editor.commit();		    
+//		}
+//		else
+//		{
+//		    // ????
+//		}
+//
+//		//endregion
+//		break;
+//		
+//	    case "PROC":
+//		//region PROC
+//		if(shouldLoad)
+//		{
+//		    // load assembly first
+//		    //dexPath = getExternalFilesDir(null).getPath() + "/" + downloadURL;
+//		    dexPath = this.getFilesDir() + "/" + downloadURL;
+//		    optimizedDexOutputPath = getDir("outdex", Context.MODE_PRIVATE);
+//		    cl = new DexClassLoader(dexPath, optimizedDexOutputPath.getAbsolutePath(), null, this.getClass().getClassLoader());
+//		    
+//		    try
+//		    {
+//			implementation = cl.loadClass(className);
+//        		try
+//        		{
+//        		    object = (Interf) implementation.newInstance();        		    
+//        		}
+//        		catch (InstantiationException e)
+//        		{
+//        		    e.printStackTrace();
+//        		    Toast.makeText(getApplicationContext(), "InstantiationException!", Toast.LENGTH_LONG).show();
+//        		}
+//        		catch (IllegalAccessException e)
+//        		{
+//        		    e.printStackTrace();
+//        		    Toast.makeText(getApplicationContext(), "IllegalAccessException!", Toast.LENGTH_LONG).show();
+//        		}
+//		    }
+//		    catch (ClassNotFoundException e)
+//		    {
+//			editor.putString("STATE", "INIT");
+//			editor.commit();
+//			
+//			e.printStackTrace();
+//			Toast.makeText(getApplicationContext(), "ClassNotFoundException!", Toast.LENGTH_LONG).show();
+//		    }
+//		}
+//
+//		// just start new thread and process
+//		if(object != null){
+//		    //object.show(getApplicationContext(), "PSImplem1 PLQSSSS");
+//		    
+//		    //new Thread(new Runnable() {
+//		    //    public void run() {
+//		            object.process(getApplicationContext());
+//		    //    }
+//		   // }).start();
+//
+//		    
+//		    editor.putString("STATE", "UP");
+//		    editor.putString("PREV_STATE", "PROC");
+//		    editor.commit();
+//		}
+//		
+//		//endregion
+//		break;
+//
+//	    case "UP":
+//		//region UP
+//		
+//		AsyncTask<Void, Void, Exception> uploadJob = new UploadFilesTask();
+//		uploadJob.execute();
+//		
+//		try
+//		{
+//		    uploadJob.get();
+//		}
+//		catch (InterruptedException e)
+//		{
+//		}
+//		catch (ExecutionException e)
+//		{
+//		}
+//		
+//		// if there is more data for the same job set shouldLoad to false!
+//		
+//		editor.putString("STATE", "INIT");
+//		editor.putString("PREV_STATE", "UP");
+//		editor.commit();
+//		
+//		
+//		//SharedPreferences.Editor editor = wmbPreference.edit();
+//		//editor.putString("STATE", "WAIT_I");
+//		//editor.putString("PREV_STATE", "UP");
+//		//editor.commit();
+//		
+//		//endregion
+//		break;
+//
+//	    case "WAIT_I":
+//		// The next state after the wait depends on the PREV_STATE
+//		
+//		try
+//		{
+//		    Thread.sleep(60000);
+//		}
+//		catch (InterruptedException e)
+//		{
+//		    e.printStackTrace();
+//		}
+//				
+//		editor.putString("STATE", "INIT");
+//		editor.putString("PREV_STATE", "WAIT_I");
+//		editor.commit();
+//		
+//		break;
+//
+//	    case "WAIT_S":
+//		
+//		try
+//		{
+//		    Thread.sleep(60000);
+//		}
+//		catch (InterruptedException e)
+//		{
+//		    e.printStackTrace();
+//		}
+//				
+//		editor.putString("STATE", "INIT");
+//		editor.putString("PREV_STATE", "WAIT_S");
+//		editor.commit();
+//		
+//		break;
+//
+//	    case "WAIT_J":
+//		
+//		try
+//		{
+//		    Thread.sleep(60000);
+//		}
+//		catch (InterruptedException e)
+//		{
+//		    e.printStackTrace();
+//		}
+//				
+//		editor.putString("STATE", "INIT");
+//		editor.putString("PREV_STATE", "WAIT_J");
+//		editor.commit();
+//		
+//		break;
+//		
+//	    default:
+//		break;
+//	    }
+//	}
+//    }
+//
+//    @Override
+//    public void onDestroy()
+//    {
+//	Toast.makeText(this, "MainService Stopped", Toast.LENGTH_LONG).show();
+//	Log.d(TAG, "onDestroy");
+//    }
 
     public boolean IsWifiEnabled()
     {
@@ -352,34 +699,40 @@ public class MainService extends android.app.Service
 
 		if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
 		{
+		    connected = true;
 		    reqResult = true;
 		}
 
+		connected = reqResult;
 		return reqResult;
 	    }
 	    catch (SocketTimeoutException e)
 	    {
 		e.printStackTrace();
+		connected = false;
 		return false;
 	    }
 	    catch (MalformedURLException e)
 	    {
 		e.printStackTrace();
+		connected = false;
 		return false;
 	    }
 	    catch (ClientProtocolException e)
 	    {
 		e.printStackTrace();
+		connected = false;
 		return false;
 	    }
 	    catch (IOException e)
 	    {
 		e.printStackTrace();
+		connected = false;
 		return false;
 	    }
 	}
 
-	protected void onPostExecute(Boolean result)
+/*	protected void onPostExecute(Boolean result)
 	{
 	    if (result)
 		// continue with the next state
@@ -389,7 +742,7 @@ public class MainService extends android.app.Service
 		// go back, wait and check again
 		//Toast.makeText(getApplicationContext(), "We do NOT have a connection!!!", Toast.LENGTH_LONG).show();
 		connected = false;
-	}
+	}*/
     }
 
     private class DownloadFileTask extends AsyncTask<String, Void, Boolean>
@@ -422,15 +775,17 @@ public class MainService extends android.app.Service
 		fos.close();
 		is.close();
 
+		downloaded = true;
 		return true;
 	    }
 	    catch (IOException e)
 	    {
+		downloaded = false;
 		return false;
 	    }
 	}
 
-	protected void onPostExecute(Boolean result)
+/*	protected void onPostExecute(Boolean result)
 	{
 	    if (result)
 	    {
@@ -443,7 +798,7 @@ public class MainService extends android.app.Service
 		downloaded = false;
 	    }
 
-	}
+	}*/
     }
 
     private class UploadFilesTask extends AsyncTask<Void, Void, Exception>

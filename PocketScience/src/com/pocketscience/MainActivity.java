@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.Menu;
+import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends Activity
@@ -36,7 +37,23 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
 	super.onCreate(savedInstanceState);
+	
+	    //Intent intent = new Intent(Intent.ACTION_MAIN);
+	   // intent.addCategory(Intent.CATEGORY_HOME);
+	   // startActivity(intent);
+	    //startService(new Intent(this, MainService.class));
+	    //finish();
+	    
+	    
+	setContentView(R.layout.service);
+	
+	//setContentView(R.layout.activity_main);
+	//Toast.makeText(getApplicationContext(), "Hello!", Toast.LENGTH_LONG).show();
+    }
 
+    // start the service
+    public void onClickStartService(View V)
+    {
 	SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(this);
 	boolean isFirstRun = wmbPreference.getBoolean("FIRSTRUN", true);
 	if (isFirstRun)
@@ -65,10 +82,15 @@ public class MainActivity extends Activity
 	{
 	    startService(new Intent(this, MainService.class));
 	}
-	setContentView(R.layout.activity_main);
-	//Toast.makeText(getApplicationContext(), "Hello!", Toast.LENGTH_LONG).show();
     }
 
+    // Stop the started service
+    public void onClickStopService(View V)
+    {
+	// Service will only stop if it is already running.
+	stopService(new Intent(this, MainService.class));
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
