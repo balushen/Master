@@ -4,7 +4,7 @@
     android:layout_height="match_parent" >
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/tvGroupCaption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="10dp"
@@ -12,58 +12,58 @@
         android:text="System load" />
 
     <RadioGroup
-        android:id="@+id/radioGroup1"
+        android:id="@+id/rgSystemLoad"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="10dp"
         android:paddingLeft="20dp" >
 
         <RadioButton
-            android:id="@+id/radio0"
+            android:id="@+id/rbLight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="Light" />
 
         <RadioButton
-            android:id="@+id/radio1"
+            android:id="@+id/rbNormal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Normal" />
 
         <RadioButton
-            android:id="@+id/radio2"
+            android:id="@+id/rbHeavy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Heavy" />
     </RadioGroup>
 
     <CheckBox
-        android:id="@+id/checkBox1"
+        android:id="@+id/cb3G"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Allow 3G" />
 
     <CheckBox
-        android:id="@+id/checkBox2"
+        android:id="@+id/cbCharge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Only while charging" />
 
     <CheckBox
-        android:id="@+id/checkBox3"
+        android:id="@+id/cbAutostart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Autostart" />
 
     <CheckBox
-        android:id="@+id/checkBox4"
+        android:id="@+id/cbNotify"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Allow notifications" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/tvSeekCaption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="10dp"
@@ -71,7 +71,7 @@
         android:text="Minimum battery level" />
 
     <SeekBar
-        android:id="@+id/seekBar1"
+        android:id="@+id/batteryBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
@@ -79,10 +79,9 @@
         android:progress="50" />
 
     <TextView
-        android:id="@+id/seekbarTV"
+        android:id="@+id/tvBatteryLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="10dp"
-        android:text="TextView" />
+        android:paddingLeft="10dp" />
 
 </TableLayout>
