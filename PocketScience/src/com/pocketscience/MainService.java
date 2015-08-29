@@ -85,7 +85,7 @@ public class MainService extends android.app.IntentService
 
 	    b.setOngoing(true);
 
-	    b.setContentTitle("TITLE")
+	    b.setContentTitle("PocketScience")
 	     .setContentText(filename)
 	     .setSmallIcon(R.drawable.ic_launcher)
 	     .setTicker("Ticker");
@@ -108,7 +108,7 @@ public class MainService extends android.app.IntentService
 
 	SharedPreferences.Editor editor = wmbPreference.edit();
 	    
-	startForeground(1987, buildForegroundNotification("drun"));
+	startForeground(1987, buildForegroundNotification("Working..."));
 	
 	while(true)
 	{

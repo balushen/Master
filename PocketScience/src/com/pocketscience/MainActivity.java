@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity
 {
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -43,10 +44,9 @@ public class MainActivity extends Activity
 	   // startActivity(intent);
 	    //startService(new Intent(this, MainService.class));
 	    //finish();
-	    
-	    
+	    	    
 	setContentView(R.layout.service);
-	
+	  
 	//setContentView(R.layout.activity_main);
 	//Toast.makeText(getApplicationContext(), "Hello!", Toast.LENGTH_LONG).show();
     }
@@ -89,6 +89,22 @@ public class MainActivity extends Activity
     {
 	// Service will only stop if it is already running.
 	stopService(new Intent(this, MainService.class));
+    }
+    
+    public void onClickOpenSettings(View v)
+    {
+	Class<?> settingsClass = null;
+	try
+	{
+	    settingsClass = Class.forName("com.pocketscience.Settings");
+	}
+	catch (ClassNotFoundException e)
+	{
+	    e.printStackTrace();
+	}
+	
+	Intent settingsIntent = new Intent(MainActivity.this, settingsClass);
+	startActivityForResult(settingsIntent, 0);
     }
     
     @Override
