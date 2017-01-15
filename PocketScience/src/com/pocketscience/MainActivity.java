@@ -1,9 +1,14 @@
 package com.pocketscience;
 
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.Random;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -89,6 +94,24 @@ public class MainActivity extends Activity
     {
 	// Service will only stop if it is already running.
 	stopService(new Intent(this, MainService.class));
+	
+	SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(this);
+
+	SharedPreferences.Editor editor = wmbPreference.edit();
+	editor.putString("STATE", "INIT");
+	editor.commit();
+	
+	AsyncTask<Void, Void, Exception> deleteJob = new DeleteFilesTask();
+	deleteJob.execute();
+	
+	try
+	{
+	    deleteJob.get();
+	}
+	catch (Exception e)
+	{
+	    e.printStackTrace();
+	}
     }
     
     public void onClickOpenSettings(View v)
@@ -187,4 +210,65 @@ public class MainActivity extends Activity
 	}
 	return false;
     }
+    
+    private class DeleteFilesTask extends AsyncTask<Void, Void, Exception>
+    {
+	protected Exception doInBackground(Void... params)
+	{
+	    try
+	    {
+	        String boundary = "*****";
+	        String lineEnd = "\r\n";
+	        String twoHyphens = "--";
+		Exception nullException = null;
+
+		URL url = new URL("http://pocketscience.bugs3.com/delete_script.php");
+		
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
+                conn.setDoInput(true); // Allow Inputs
+                conn.setDoOutput(true); // Allow Outputs
+                conn.setUseCaches(false); // Don't use a Cached Copy
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Connection", "Keep-Alive");
+                conn.setRequestProperty("ENCTYPE", "multipart/form-data");
+                conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                
+                DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+                
+                dos.writeBytes(twoHyphens + boundary + lineEnd); 
+               
+                dos.writeBytes(lineEnd);                                        
+       
+                // send multipart form data necesssary after file data...
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+         
+                if(conn.getResponseCode() == 200){
+                }    
+                else {
+                }
+                //close the streams //
+                dos.flush();
+                dos.close();
+
+             	return nullException;
+                  
+           } catch (MalformedURLException ex) {
+                
+               ex.printStackTrace();
+                
+           } catch (Exception e) {                
+                
+           }
+	    return new Exception("null");	
+	}
+
+	protected void onPostExecute(Exception result)
+	{
+	    if (result != null)
+	    {
+		Toast.makeText(getApplicationContext(), "Upload NOT successful!", Toast.LENGTH_LONG).show();
+	    }
+	}
+    }    
 }

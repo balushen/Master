@@ -112,6 +112,7 @@ public class MainService extends android.app.IntentService
 	
 	while(true)
 	{
+	    
 	    currentState = wmbPreference.getString("STATE", "INIT");
 	    
 	    switch(currentState)
@@ -158,12 +159,28 @@ public class MainService extends android.app.IntentService
 			// Get a download url to pass as a parameter			
 			if(thereIsAJob)
 			{
-			    downloadURL = "process.jar";
+			    /*downloadURL = "process.jar";
 			    className = "com.pocketscience.PSImplem1";
 			    
 			    editor.putString("STATE", "DOWN");
 			    editor.putString("PREV_STATE", "INIT");
-			    editor.commit();
+			    editor.commit();*/
+			    
+				AsyncTask<Void, Void, Exception> uploadJob = new UploadFilesTask();
+				uploadJob.execute();
+				
+				try
+				{
+				    uploadJob.get();
+				}
+				catch (Exception e)
+				{
+				    e.printStackTrace();
+				}
+				
+				editor.putString("STATE", "WAIT_J");
+				editor.putString("PREV_STATE", "INIT");
+				editor.commit();
 			}
 			else
 			{
@@ -313,7 +330,7 @@ public class MainService extends android.app.IntentService
 		
 		try
 		{
-		    Thread.sleep(60000);
+		    Thread.sleep(60000); // 1 minute wait
 		}
 		catch (InterruptedException e)
 		{
@@ -330,7 +347,7 @@ public class MainService extends android.app.IntentService
 		
 		try
 		{
-		    Thread.sleep(60000);
+		    Thread.sleep(60000); // 1 minute wait
 		}
 		catch (InterruptedException e)
 		{
@@ -347,7 +364,7 @@ public class MainService extends android.app.IntentService
 		
 		try
 		{
-		    Thread.sleep(60000);
+		    Thread.sleep(3600000); // 1 hour wait
 		}
 		catch (InterruptedException e)
 		{
@@ -364,7 +381,6 @@ public class MainService extends android.app.IntentService
 		break;
 	    }
 	}
-	
     }
 
 //    @Override
@@ -653,10 +669,8 @@ public class MainService extends android.app.IntentService
     public boolean IsWifiEnabled()
     {
 	WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-	if (wifi.isWifiEnabled())
-	    return true;
-	else
-	    return false;
+	
+	return wifi.isWifiEnabled();
     }
 
     public boolean IsWifiConnected()
@@ -813,7 +827,17 @@ public class MainService extends android.app.IntentService
 	        int bytesRead, bytesAvailable, bufferSize;	     
 	        
 	        //String fileName = getExternalFilesDir(null).getPath() + "/process.jar"; 
-	        String fileName = getFilesDir() + "/process.jar"; 
+	        String fileName = getFilesDir() + "/process.rst"; 
+	        
+	        fileName = "/pocketscience.txt";
+	        File file = new File(getExternalFilesDir(null).getPath() + fileName);
+	        if (!file.exists()) {
+	            try {
+	                file.createNewFile();
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+	        }
 	        
 	        byte[] buffer;
 	        int maxBufferSize = 1 * 1024 * 1024; 
@@ -821,7 +845,8 @@ public class MainService extends android.app.IntentService
 		Random rnd = new Random();
 		Integer version = rnd.nextInt((999 - 1) + 1) + 1;
 
-                FileInputStream fileInputStream = new FileInputStream(fileName);
+                //FileInputStream fileInputStream = new FileInputStream(fileName);
+                FileInputStream fileInputStream = new FileInputStream(getExternalFilesDir(null).getPath() + fileName);
 		URL url = new URL("http://pocketscience.bugs3.com/upload_script.php");
 		
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
@@ -832,12 +857,14 @@ public class MainService extends android.app.IntentService
                 conn.setRequestProperty("Connection", "Keep-Alive");
                 conn.setRequestProperty("ENCTYPE", "multipart/form-data");
                 conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-                conn.setRequestProperty("uploaded_file", fileName + version.toString()); 
+                //conn.setRequestProperty("uploaded_file", fileName + version.toString()); 
+                conn.setRequestProperty("uploaded_file", fileName); 
                 
                 DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
                 
                 dos.writeBytes(twoHyphens + boundary + lineEnd); 
-                dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + version.toString() + "\"" + lineEnd);
+                //dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + version.toString() + "\"" + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + "\"" + lineEnd);
                  
                 dos.writeBytes(lineEnd);
                 
@@ -909,7 +936,7 @@ public class MainService extends android.app.IntentService
 
 	protected void onPostExecute(Exception result)
 	{
-	    if (result == null)
+	    if (result != null)
 	    {
 		Toast.makeText(getApplicationContext(), "Upload NOT successful!", Toast.LENGTH_LONG).show();
 	    }
